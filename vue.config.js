@@ -15,5 +15,14 @@ module.exports = {
         },
       ],
     },
+    devServer: {
+      proxy: {
+        '/api': {
+          target: 'https://16.170.249.186:8080',
+          changeOrigin: true,
+          secure: false,
+        }
+      }
+    }
   },
 };
