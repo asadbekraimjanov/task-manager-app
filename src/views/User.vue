@@ -15,7 +15,7 @@
             </template>
             <template #default>
                 <div class="w-full flex justify-center">
-                    <el-button @click="exitButton" class="w-full">Chiqish</el-button>
+                    <el-button @click="exitButton" class="w-full">Logout</el-button>
                 </div>
             </template>
         </el-popover>
@@ -58,22 +58,22 @@ const dialogVisible = ref(false)
 
 const components = ref([
     {
-        name: 'Proyektlar',
+        name: 'Projects',
         path: 'projects',
         icon: projects,
     },
     {
-        name: "E'lonlar ro'yxati",
+        name: "List board",
         path: 'board',
         icon: board,
     },
     {
-        name: 'Xodimlar boshqaruvi',
+        name: 'Employee management',
         path: 'employees',
         icon: employee,
     },
     {
-        name: 'Kelib tushgan topshiriqlar',
+        name: 'Incoming tasks',
         path: 'tasks',
         icon: tasks,
     },
@@ -83,7 +83,7 @@ const components = ref([
     //     icon: documents,
     // },
     {
-        name: 'Shaxsiy kabinet',
+        name: 'Profile',
         path: 'profile',
         icon: profile
     }

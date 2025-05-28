@@ -10,23 +10,23 @@
             <div v-if="tableData" class="w-full flex justify-between gap-4">
                 <el-card v-loading="loading" class="w-1/2">
                     <div class="w-full flex items-center justify-between mb-2">
-                        <p>Ismi:</p>
+                        <p>Firstname:</p>
                         <p>{{ tableData.firstname }}</p>
                     </div>
                     <div class="w-full flex items-center justify-between mb-2">
-                        <p>Familiya:</p>
+                        <p>Lastname:</p>
                         <p>{{ tableData.lastname }}</p>
                     </div>
                     <div class="w-full flex items-center justify-between mb-2">
-                        <p>Pochta:</p>
+                        <p>Email:</p>
                         <p>{{ tableData.user?.email }}</p>
                     </div>
                     <div class="w-full flex items-center justify-between mb-2">
-                        <p>Kasbi:</p>
+                        <p>Profession:</p>
                         <p>{{ tableData.profession }}</p>
                     </div>
                     <div class="w-full flex items-center justify-between mb-2">
-                        <p>Qobiliyat:</p>
+                        <p>Good at:</p>
                         <p>{{ tableData.goodAt }}</p>
                     </div>
                 </el-card>
@@ -37,7 +37,7 @@
                         <p>{{ tableData.user?.login }}</p>
                     </div>
                     <div class="w-full flex items-center justify-between mb-2">
-                        <p>Parol:</p>
+                        <p>Password:</p>
                         <el-popover trigger="click" placement="left">
                             <template #default>
                                 <p>{{ tableData.user?.password }}</p>
@@ -48,48 +48,49 @@
                         </el-popover>
                     </div>
                     <div class="w-full flex items-center justify-between mb-2">
-                        <p>Yaratilgan vaqti:</p>
+                        <p>Created at:</p>
                         <p>{{ moment(tableData.user?.createdAt).format('HH:mm:ss DD.MM.YYYY') }} y.</p>
                     </div>
                     <div class="w-full flex items-center justify-between mb-2">
-                        <p>Roli:</p>
+                        <p>Role:</p>
                         <p>{{ tableData.user?.role }}</p>
                     </div>
                 </el-card>
             </div>
         </div>
         <div class="w-full flex items-center justify-center gap-2">
-            <el-button @click="exit">Chiqish</el-button>
-            <el-button class="bg-[#00345b] text-white" @click="fillProfile">To'ldirish</el-button>
+            <el-button @click="exit">Logout</el-button>
+            <el-button class="bg-[#00345b] text-white" @click="fillProfile">Fill profile</el-button>
         </div>
-        <el-dialog v-model="dialogVisible" title="Ma'lumotlaringizni to'ldiring">
-            <el-form v-model="formData" label-position="top" >
+        <el-dialog v-model="dialogVisible" title="Fill in your details">
+            <el-form v-model="formData" :rules="rules" label-position="top" >
                 <el-row class="w-full" :gutter="10">
                     <el-col :span="12">
-                        <el-form-item prop="firstname" label="Ismi">
-                            <el-input v-model="formData.firstname" placeholder="Ismi" clearable />
+                        <el-form-item prop="firstname" label="Firstname">
+                            <el-input v-model="formData.firstname" placeholder="Firstname" clearable />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item prop="lastname" label="Familiyasi">
-                            <el-input v-model="formData.lastname" placeholder="Familiyasi" clearable />
+                        <el-form-item prop="lastname" label="Lastname">
+                            <el-input v-model="formData.lastname" placeholder="Lastname" clearable />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item prop="profession" label="Kasbi">
-                            <el-input v-model="formData.profession" placeholder="Kasbi" clearable />
+                        <el-form-item prop="profession" label="Profession">
+                            <el-input v-model="formData.profession" placeholder="Profession" clearable />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item prop="goodAt" label="Qobiliyati">
-                            <el-input v-model="formData.goodAt" placeholder="Qaysi yo'nalishda yaxshiroq" clearable />
+                        <el-form-item prop="goodAt" label="Good at">
+                            <el-input v-model="formData.goodAt" placeholder="Matches the word skills" clearable />
                         </el-form-item>
                     </el-col>
                     <div class="w-full flex items-center justify-end mt-2">
                         <el-button class="bg-red-400 text-white font-normal" @click="close">
-                            Bekor qilish
+                            Cancel
                         </el-button>
-                        <el-button @click="profileFilled" class="bg-[#00345b] text-white font-normal">Qo'shish</el-button>                    </div>
+                        <el-button @click="profileFilled" class="bg-[#00345b] text-white font-normal">Add</el-button>
+                    </div>
                 </el-row>
             </el-form>
         </el-dialog>
@@ -97,7 +98,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
+import {onMounted, reactive, ref} from "vue";
 import store from "@/store";
 import axios from "axios";
 import {ElMessage, ElMessageBox} from "element-plus";
@@ -116,6 +117,13 @@ const formData = ref({
     goodAt: ''
 })
 
+const rules = reactive({
+    firstname: [{required: true, message: 'Required', trigger: 'blur'}],
+    lastname: [{required: true, message: 'Required', trigger: 'blur'}],
+    profession: [{required: true, message: 'Required', trigger: 'blur'}],
+    goodAt: [{required: true, message: 'Required', trigger: 'blur'}],
+})
+
 const fillProfile = () => {
     dialogVisible.value = true;
 }
@@ -128,10 +136,10 @@ const profileFilled = () => {
             // Authorization: `Bearer ${store.state.accessToken}`
         }
     }).then(res => {
-        ElMessage.success('Ma\'lumot saqlandi')
+        ElMessage.success('Saved success')
         getTableData()
     }).catch(() => {
-        ElMessage.error('Xatolik!!Administratorga xabar bering')
+        ElMessage.error('An error has been occurred!!')
     }).finally(() => {
         close()
     }).finally(() => { loading.value = false; })
@@ -144,11 +152,11 @@ const close = () => {
 
 const exit = () => {
     ElMessageBox.confirm(
-        'Akauntdan chiqmoqchimisiz',
+        'Are you want to exit?',
         {
-            title: 'Tasdiqlash',
-            confirmButtonText: 'Tasdiqlash',
-            cancelButtonText: 'Bekor qilish',
+            title: 'Confirm',
+            confirmButtonText: 'Ok',
+            cancelButtonText: 'Cancel',
             confirmButtonClass: 'bg-[#00345b] text-white font-normal border-0',
             cancelButtonClass: 'bg-red-400 text-white font-normal'
         }
@@ -175,9 +183,9 @@ const getTableData = () => {
         console.log(tableData.value)
     }).catch(() => {
         if (tableData.value.firstname) {
-            ElMessage.error('Xatolik!!Administratorga xabar bering')
+            ElMessage.error('An error has been occurred!!')
         } else {
-            ElMessage.warning('Profil ma\'lumotlaringizni to\'ldiring')
+            ElMessage.warning('Fill in your profile information')
         }
     })
         .finally(() => { loading.value = false })

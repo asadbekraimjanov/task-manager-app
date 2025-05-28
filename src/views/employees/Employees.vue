@@ -1,7 +1,7 @@
 <template>
     <div v-if="tableData" class="w-full h-full p-2">
         <div class="w-full flex items-center justify-between">
-            <p class="text-xl font-normal text-blue-950 pb-1">Xodimlar boshqaruvi</p>
+            <p class="text-xl font-normal text-blue-950 pb-1">Employee management</p>
         </div>
         <el-table :data="paginatedDataTable" v-loading="loading" class="w-full h-[calc(100vh-140px)]" border stripe>
             <el-table-column label="№" width="50" align="center" header-align="center">
@@ -12,7 +12,7 @@
 
             <el-table-column
                 prop="firstname"
-                label="Ismi"
+                label="Firstname"
                 sortable
                 :filters="getUniqueFilters('firstname')"
                 :filter-method="filterHandler"
@@ -21,7 +21,7 @@
 
             <el-table-column
                 prop="lastname"
-                label="Familiyasi"
+                label="Lastname"
                 sortable
                 :filters="getUniqueFilters('lastname')"
                 :filter-method="filterHandler"
@@ -30,7 +30,7 @@
 
             <el-table-column
                 prop="profession"
-                label="Mutaxassisligi"
+                label="Profession"
                 sortable
                 :filters="getUniqueFilters('profession')"
                 :filter-method="filterHandler"
@@ -45,12 +45,12 @@
 
             <el-table-column
                 prop="user.email"
-                label="Pochta"
+                label="Email"
                 sortable
             />
 
             <el-table-column
-                label="Ro'yxatdan o'tgan sanasi"
+                label="Register date"
                 sortable
             >
                 <template #default="scope">
@@ -60,7 +60,7 @@
 
             <el-table-column
                 prop="user.role"
-                label="Rol"
+                label="Role"
                 align="center"
                 header-align="center"
                 sortable
@@ -72,7 +72,7 @@
                     <el-tag>{{ scope.row.user.role }}</el-tag>
                 </template>
             </el-table-column>
-            <el-table-column label="Harakatlar" align="center" header-align="center" width="100">
+            <el-table-column label="Actions" align="center" header-align="center" width="100">
                 <template #default="scope">
                     <div>
                         <el-button @click="onEdit" :icon="Edit" type="text" class="text-xl"/>
@@ -152,15 +152,15 @@ const handleCurrentChange = (page) => {
 const onEdit = () => {
     ElNotification({
         type: 'warning',
-        title: 'Jarayonda',
-        message: 'Tez orada o\'zgartirish funksiyasi qo\'shiladi'
+        title: 'In process',
+        message: 'Change function will be added soon'
     })
 }
 const onDelete = () => {
     ElNotification({
         type: 'warning',
-        title: 'Jarayonda',
-        message: 'Tez orada o\'chirish funksiyasi qo\'shiladi'
+        title: 'In process',
+        message: 'Delete function will be added soon'
     })
 }
 

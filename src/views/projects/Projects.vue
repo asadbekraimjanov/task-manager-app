@@ -1,8 +1,8 @@
 <template>
     <div class="w-full h-[350px] p-2">
         <div class="w-full flex justify-between items-center">
-            <p class="text-blue-950 text-xl">Jarayondagi Loyihalar</p>
-            <el-button class="bg-blue-900 text-white" @click="dialogOpen">Qo'shish</el-button>
+            <p class="text-blue-950 text-xl">Projects in Progress</p>
+            <el-button class="bg-blue-900 text-white" @click="dialogOpen">Add</el-button>
         </div>
         <el-scrollbar class="w-full h-[330px]">
             <div v-if="tableDataInProgress" v-loading="loading" class="w-fit flex gap-4 p-2">
@@ -12,13 +12,13 @@
                 >
                     <img class="h-10 absolute mt-8" src="@/assets/images/logotip2.jpg" alt="">
                     <div class="w-full flex justify-end">
-                        <el-button class="bg-[var(--el-color-primary)] text-white" @click="createTask(item.id)">Topshiriq tushirish</el-button>
+                        <el-button class="bg-[var(--el-color-primary)] text-white" @click="dialogTaskOpen(item.id)">Create Task</el-button>
                         <el-button class="text-2xl" :icon="Edit" type="text" @click="onEditStatus(item.id)"></el-button>
                     </div>
                     <div>
                         <p class="font-bold text-xl text-gray-700 pt-10">{{ item.name }}</p>
                         <p class="text-md font-normal text-gray-400 pt-3">{{ item.description }}</p>
-                        <p class="text-sm font-normal text-gray-400 pt-3">Yaratuvchi: {{ item.owner.firstname }} {{ item.owner.lastname }}</p>
+                        <p class="text-sm font-normal text-gray-400 pt-3">Owner: {{ item.owner?.firstname }} {{ item.owner?.lastname }}</p>
                     </div>
                     <div class="w-full flex justify-between items-center">
                         <div
@@ -28,13 +28,13 @@
                                 <Clock/>
                             </el-icon>
                             <span>
-                               {{ moment(item.endDate, 'DD-MM-YYYY').diff(moment(), 'days') }} kun qoldi
+                               {{ moment(item.endDate, 'DD-MM-YYYY').diff(moment(), 'days') }} {{ moment(item.endDate, 'DD-MM-YYYY').diff(moment(), 'days') <=1 ? 'day left' : 'days left' }}
                             </span>
                         </div>
                         <div>
                             <el-popover placement="right" trigger="click" width="300">
                                 <template #reference>
-                                    <el-button>Ma'sul xodimlar</el-button>
+                                    <el-button>Assigned employees</el-button>
                                 </template>
                                 <template #default>
                                     <div class="w-full">
@@ -56,42 +56,42 @@
 
         <el-table v-if="paginatedDataTable" v-loading="loading" :data="paginatedDataTable" class="w-full h-[calc(100vh-480px)] mt-2"
                   border stripe>
-            <el-table-column label="№" width="50" align="center" header-align="center">
+            <el-table-column label="№" width="50" align="center" header-align="center" fixed>
                 <template #default="scope">
                     {{ scope.$index + 1 }}
                 </template>
             </el-table-column>
-            <el-table-column label="Nomi" prop="name" width="150" sortable/>
-            <el-table-column label="Yaratuvchi" width="180" sortable>
+            <el-table-column label="Name" prop="name" sortable width="150" fixed />
+            <el-table-column label="Owner" width="180" sortable>
                 <template #default="scope">
-                    {{ scope.row.owner.firstname }} {{ scope.row.owner.lastname }}
+                    {{ scope.row?.owner?.firstname }} {{ scope.row?.owner?.lastname }}
                 </template>
             </el-table-column>
-            <el-table-column label="Byudjet" prop="budget" width="100" sortable/>
-            <el-table-column label="Yaratilgan sana" prop="startDate" width="100" sortable/>
-            <el-table-column label="Tugash sanasi" prop="endDate" width="100" sortable/>
-            <el-table-column label="Tavsif" prop="description" width="200"/>
-            <el-table-column label="Biriktirilgan hodimlar" width="150">
+            <el-table-column label="Budget" prop="budget" sortable width="100" align="center" />
+            <el-table-column label="Start date" prop="startDate" sortable align="center" width="100" />
+            <el-table-column label="End date" prop="endDate" sortable align="center" width="100" />
+            <el-table-column label="Description" prop="description" width="120" />
+            <el-table-column label="Assigned employees" width="180">
                 <template #default="scope">
                     <p v-for="item in scope.row.employees">
-                        {{ item.lastname }} {{ item.firstname }}
+                        {{ item.lastname }} {{ item.firstname }}{{item !== scope.row.employees[scope.row.employees.length-1] ? ',' : ''}}
                     </p>
                 </template>
             </el-table-column>
-            <el-table-column label="Bahosi" width="130" sortable>
+            <el-table-column label="Rate" sortable width="130">
                 <template #default="scope">
                     <el-rate v-model="scope.row.rate" size="small" disabled />
                 </template>
             </el-table-column>
-            <el-table-column label="Holati" prop="status" align="center" header-align="center" width="120" sortable>
+            <el-table-column label="Status" prop="status" align="center" header-align="center" sortable width="135">
                 <template #default="scope">
                     <el-tag :type="typeTag[scope.row.status]" v-if="scope.row.status">{{ statusRow[scope.row.status] }}</el-tag>
                 </template>
             </el-table-column>
-            <el-table-column label="Harakatlar" align="center" header-align="center" width="100">
+            <el-table-column label="Actions" align="center" header-align="center" fixed="right">
                 <template #default="scope">
                     <div>
-                        <el-button @click="onEdit" :icon="Edit" type="text" class="text-xl"/>
+                        <el-button @click="onEditStatus(scope.row.id)" :icon="Edit" type="text" class="text-xl"/>
                         <el-button @click="onDelete" :icon="Delete" type="text" class="text-xl text-red-400"/>
                     </div>
                 </template>
@@ -109,31 +109,32 @@
             />
         </div>
         <AddProjectDialog @add-project="getTableData" ref="projectDialog" />
-        <el-dialog width="400" v-model="editProjectStatus" title="Statusni o'zgartirish">
-            <el-select v-model="selectedStatus" placeholder="Tanlang" clearable>
+        <AddTaskDialog :project-id="projectId" ref="projectTaskDialog" />
+        <el-dialog width="400" v-model="editProjectStatus" title="Edit status">
+            <el-select v-model="selectedStatus" placeholder="Select" clearable>
                 <el-option v-for="item in status" :label="item.label" :value="item.value"/>
             </el-select>
 
             <div>
                 <div class="w-full flex justify-end pt-4">
-                    <el-button class="bg-red-400 text-white font-normal" @click="editProjectStatus = false">
-                        Bekor qilish
+                    <el-button class="bg-red-400 text-white font-normal" @click="closeEditStatus">
+                        Cancel
                     </el-button>
-                    <el-button @click="statusUpdated" class="bg-[#00345b] text-white font-normal">Qo'shish</el-button>
+                    <el-button @click="statusUpdated" class="bg-[#00345b] text-white font-normal">Ok</el-button>
                 </div>
             </div>
         </el-dialog>
-        <el-dialog width="400" v-model="bindEmployeeDialog" title="Hodim biriktirish">
-            <el-select v-model="selectedEmployee" placeholder="Tanlang" clearable multiple filterable>
+        <el-dialog width="400" v-model="bindEmployeeDialog" title="Add Employee">
+            <el-select v-model="selectedEmployee" placeholder="Select" clearable multiple filterable>
                 <el-option v-for="item in employeeData" :label="`${item.lastname} ${item.firstname} - ${item.profession}`" :value="item.id"/>
             </el-select>
 
             <div>
                 <div class="w-full flex justify-end pt-4">
                     <el-button class="bg-red-400 text-white font-normal" @click="closeBindEmployeeDialog">
-                        Bekor qilish
+                        Cancel
                     </el-button>
-                    <el-button @click="bindedEmployee" class="bg-[#00345b] text-white font-normal">Qo'shish</el-button>
+                    <el-button @click="bindedEmployee" class="bg-[#00345b] text-white font-normal">Add</el-button>
                 </div>
             </div>
         </el-dialog>
@@ -148,6 +149,7 @@ import AddProjectDialog from "@/views/projects/AddProjectDialog.vue";
 import {ElMessage, ElNotification} from "element-plus";
 import moment from "moment";
 import store from "@/store";
+import AddTaskDialog from "@/views/projects/AddTaskDialog.vue";
 
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -163,15 +165,15 @@ const loading = ref(false)
 const projectDialog = ref(null)
 const bindEmployeeDialog = ref(false)
 const editProjectStatus = ref(false)
-const selectedStatus = ref(null)
+const selectedStatus = ref('PENDING')
 const selectedEmployee = ref(null)
 const selectedStatusId = ref(null)
 const statusRow = ref({
-    'IN_PROGRESS': 'Jarayonda',
-    'COMPLETED': 'Tugallangan',
-    'PENDING': 'Kutilmoqda',
-    'CANCELLED': 'Bekor qilingan',
-    'BACKLOG': 'Orqada'
+    'IN_PROGRESS': 'IN_PROGRESS',
+    'COMPLETED': 'COMPLETED',
+    'PENDING': 'PENDING',
+    'CANCELLED': 'CANCELLED',
+    'BACKLOG': 'BACKLOG'
 });
 const typeTag = {
     'IN_PROGRESS': 'primary',
@@ -182,31 +184,30 @@ const typeTag = {
 }
 const status = ref([
     {
-        label: 'Jarayonda',
+        label: 'IN_PROGRESS',
         value: 'IN_PROGRESS'
     },
     {
-        label: 'Tugallangan',
+        label: 'COMPLETED',
         value: 'COMPLETED'
     },
     {
-        label: 'Kutilmoqda',
+        label: 'PENDING',
         value: 'PENDING'
     },
     {
-        label: 'Bekor qilingan',
+        label: 'CANCELLED',
         value: 'CANCELLED'
     },
     {
-        label: 'Orqada',
+        label: 'BACKLOG',
         value: 'BACKLOG'
     },
 ])
 const ownerData = ref(null)
+const projectId = ref(null)
+const projectTaskDialog = ref(false)
 
-const createTask = (projectId) => {
-    axios.post('')
-}
 
 const paginatedData = () => {
     paginatedDataTable.value = tableData.value
@@ -237,7 +238,7 @@ const bindEmployee = async (data) => {
         headers: {'Content-Type': 'application/json'}
     }).then(res => {
         employeeData.value = res.data;
-    }).catch(() => { ElMessage.error('Xatolik!!Administratorga xabar bering') }).finally(() => {
+    }).catch(() => { ElMessage.error('An error has been occurred!!') }).finally(() => {
         loading.value = false
     })
 
@@ -250,8 +251,8 @@ const bindedEmployee = () => {
         projectId: ownerData.value.id,
         ownerId: ownerData.value.owner.id,
         employeesId: selectedEmployee.value
-    }).then(() => ElMessage.success('Qo\'shildi'))
-        .catch(() => ElMessage.error('Xatolik!!Administratorga xabar bering'))
+    }).then(() => ElMessage.success('Success'))
+        .catch(() => ElMessage.error('An error has been occurred!!'))
         .finally(() => {
             closeBindEmployeeDialog()
             getTableData()
@@ -259,17 +260,38 @@ const bindedEmployee = () => {
 }
 
 const statusUpdated = () => {
-    axios.patch('http://16.170.249.186:8080/api/pro/update-status', {
-        projectId: selectedStatusId.value,
-        status: selectedStatus.value
-    }, {
-        'Content-Type': 'application/json'
-    }).catch(err => { console.log(err); ElMessage.error('Xatolik!!Administratorga xabar bering') })
+    // axios.patch('http://16.170.249.186:8080/api/pro/update-status', {
+    //     projectId: selectedStatusId.value,
+    //     status: selectedStatus.value
+    // }, {
+    //     'Content-Type': 'application/json'
+    // }).then(() => {
+    //     getTableData()
+    // })
+    //     .catch(err => { console.log(err); ElMessage.error('Xatolik!!Administratorga xabar bering') })
+
+    tableData.value.forEach((item, index) => {
+        if (item.id === selectedStatusId.value) {
+            tableData.value[index].status = selectedStatus.value
+            ElMessage.success('Status updated')
+        }
+    })
+    // tableDataInProgress.value.filter((item, index) => {
+    //     if (item.status !== 'IN_PROGRESS') {
+    //         tableDataInProgress.value.splice(index, 1)
+    //     }
+    // })
+
+    closeEditStatus()
 }
 
 
 const dialogOpen = () => {
     projectDialog['value'].openDialog()
+}
+const dialogTaskOpen = (id) => {
+    projectId.value = id
+    projectTaskDialog['value'].openTaskDialog()
 }
 
 const closeBindEmployeeDialog = () => {
@@ -277,18 +299,23 @@ const closeBindEmployeeDialog = () => {
     selectedEmployee.value = []
 }
 
+const closeEditStatus = () => {
+    selectedStatus.value = null
+    editProjectStatus.value = false
+}
+
 const onEdit = () => {
     ElNotification({
         type: 'warning',
-        title: 'Jarayonda',
-        message: 'Tez orada o\'zgartirish funksiyasi qo\'shiladi'
+        title: 'In process',
+        message: 'Change function will be added soon'
     })
 }
 const onDelete = () => {
     ElNotification({
         type: 'warning',
-        title: 'Jarayonda',
-        message: 'Tez orada o\'chirish funksiyasi qo\'shiladi'
+        title: 'In process',
+        message: 'Delete function will be added soon'
     })
 }
 

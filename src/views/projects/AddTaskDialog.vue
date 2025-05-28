@@ -1,20 +1,22 @@
-x<template>
-    <el-dialog title="Add new project" v-model="dialogVisible" @close="close" width="500">
+<template>
+    <el-dialog title="Add new task" v-model="dialogVisibleTask" @close="closeTask" width="500">
         <el-form :model="formData" :rules="rules" label-position="top">
             <el-row :gutter="10">
-<!--                <el-col :span="12">-->
-<!--                    <el-form-item prop="ownerId" label="Yaratuvchi">-->
-<!--                        <el-input v-model="formData.ownerId" placeholder="Yaratuvchi" disabled clearable />-->
-<!--                    </el-form-item>-->
-<!--                </el-col>-->
+                <!--                <el-col :span="12">-->
+                <!--                    <el-form-item prop="ownerId" label="Yaratuvchi">-->
+                <!--                        <el-input v-model="formData.ownerId" placeholder="Yaratuvchi" disabled clearable />-->
+                <!--                    </el-form-item>-->
+                <!--                </el-col>-->
                 <el-col :span="12">
-                    <el-form-item prop="name" label="Namw">
+                    <el-form-item prop="name" label="Name">
                         <el-input v-model="formData.name" placeholder="Name" clearable />
                     </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                    <el-form-item prop="budget" label="Budget">
-                        <el-input-number v-model="formData.budget" placeholder="Budget" class="w-full" clearable />
+                    <el-form-item prop="prior" label="Difficulty">
+                        <el-select v-model="formData.prior" placeholder="Select" clearable>
+                            <el-option v-for="(value, label) in options" :label="label" :value="value" />
+                        </el-select>
                     </el-form-item>
                 </el-col>
                 <el-col :span="12">
@@ -35,7 +37,7 @@ x<template>
             </el-row>
         </el-form>
         <div class="w-full flex justify-end">
-            <el-button class="bg-red-400 text-white font-normal" @click="close">Cancel</el-button>
+            <el-button class="bg-red-400 text-white font-normal" @click="closeTask">Cancel</el-button>
             <el-button class="bg-[#00345b] text-white font-normal" @click="submit">Add</el-button>
         </div>
     </el-dialog>
@@ -45,59 +47,73 @@ x<template>
 import {reactive, ref} from "vue";
 import moment from "moment";
 import axios from "axios";
-import store from "@/store";
 import {ElMessage} from "element-plus";
 
-const emit = defineEmits(["addProject"]);
+const emit = defineEmits(["addTask"]);
 
-const dialogVisible = ref(false)
+const props = defineProps({
+    projectId: {
+        type: [Number, null],
+        required: true,
+    }
+})
+
+const dialogVisibleTask = ref(false)
 const formData = ref({
-    ownerId: store.state.userData.userId,
+    projectId: props.projectId,
     name: null,
     description: null,
-    budget: null,
+    score: 5,
     startDate: moment().format("DD-MM-YYYY"),
     endDate: null,
+    prior: null,
+})
+const options = ref({
+    'LOW': 'LOW',
+    'MEDIUM': 'MEDIUM',
+    'HIGH': 'HIGH'
 })
 
 const rules = reactive({
+    projectId: [{required: true, message: 'Required', trigger: 'blur'}],
     name: [{required: true, message: 'Required', trigger: 'blur'}],
-    ownerId: [{required: true, message: 'Required', trigger: 'blur'}],
     description: [{required: false}],
-    budget: [{required: true, message: 'Required', trigger: 'blur', type: Number}],
+    score: [{required: true, message: 'Required', trigger: 'blur', type: Number}],
+    prior: [{required: true, message: 'Required', trigger: 'blur', type: Number}],
     endDate: [{required: true, message: 'Required', trigger: 'blur'}],
     startDate: [{required: true, message: 'Required', trigger: 'blur'}],
 })
 
 
-const openDialog = () => {
-    dialogVisible.value = true
+const openTaskDialog = () => {
+    dialogVisibleTask.value = true
 }
 
 const submit = async () => {
-    axios.post('http://16.170.249.186:8080/api/pro/create', {
-        "ownerId": store.state.userData.userId,
+    axios.post('http://16.170.249.186:8080/api/task/create', {
         "name": formData.value.name,
         "description": formData.value.description,
-        "budget": formData.value.budget,
         "startDate": moment().format("DD-MM-YYYY"),
         "endDate": formData.value.endDate,
+        "projectId": props.projectId,
+        "score": formData.value.score,
+        "prior": formData.value.prior,
     }, {
         'Content-Type': 'application/json',
     }).then(res => {
         ElMessage.success('Success')
-        emit('addProject')
+        emit('addTask')
     }).catch(err => { console.log(err); ElMessage.error('An error has been occurred!!') })
-    close()
+    closeTask()
 }
 
-const close = () => {
-    dialogVisible.value = false
+const closeTask = () => {
+    dialogVisibleTask.value = false
     formData.value = {}
 }
 
 defineExpose({
-    openDialog, close
+    openTaskDialog, closeTask
 })
 
 </script>

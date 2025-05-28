@@ -10,7 +10,7 @@
                 </div>
                 <div class="main-info-box">
                     <p class="info1">
-                        Hujjatlarni yuritish tizimi
+                        Document management system
                     </p>
                 </div>
                 <div class="main-form-box">
@@ -24,17 +24,17 @@
                             class="login"
                             id="login"
                             style="font-size: 14px"
-                            placeholder="Loginni kiriting"
+                            placeholder="Enter login"
                             @keyup.enter="enterButton"
                             clearable size="small"
                         ></el-input>
                         <p v-if="!inputEmail && notFilled" class="not-filled">
-                            Majburiy maydon
+                            Required
                         </p>
                         <p v-else class="not-filled"></p>
                         <label style="font-size: 14px; margin-top: 5px; font-weight: normal; color: #3d4046"
                                for="password">
-                            Parol
+                            Password
                         </label>
                         <el-input
                             v-model="inputPassword"
@@ -44,20 +44,20 @@
                             style="font-size: 14px" type="password"
                             show-password
                             @keyup.enter="enterButton"
-                            placeholder="Parolni kiriting"
+                            placeholder="Enter password"
                             clearable size="small"
                         ></el-input>
                         <p v-if="!inputPassword && notFilled" class="not-filled">
-                            Majburiy maydon
+                            Required
                         </p>
                         <p v-else class="not-filled"></p>
                         <el-button @click="enterButton" class="w-1/2 mt-5 ml-[25%] bg-blue-700 text-white">
-                            TIZIMGA KIRISH
+                            ENTER
                         </el-button>
                     </form>
                 </div>
                 <div class="w-full flex justify-center">
-                    <el-button @click="router.push('register')" class="mt-32" type="text">Registratsiyadan o'tmaganmisiz?</el-button>
+                    <el-button @click="router.push('register')" class="mt-32" type="text">Sign up</el-button>
                 </div>
             </el-col>
         </el-row>
@@ -87,7 +87,7 @@ const enterButton = async () => {
     axios.post('http://16.170.249.186:8080/api/auth/login', {login: inputEmail.value, password: inputPassword.value}).then(res => {
         store.commit("setToken", res.data.accessToken)
         router.push('/user')
-    }).catch(err => { ElMessage.error('Tizimga kirish amalga oshirilmadi.') })
+    }).catch(err => { ElMessage.error('Login failed.') })
 }
 </script>
 

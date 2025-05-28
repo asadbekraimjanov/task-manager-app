@@ -10,7 +10,7 @@
                 </div>
                 <div class="main-info-box">
                     <p class="info1">
-                        Registratsiyadan o'tish
+                        Register now
                     </p>
                 </div>
                 <div class="main-form-box">
@@ -22,19 +22,19 @@
                             v-model="inputLogin"
                             :class="notFilled && !inputLogin ? 'no-fill' : ''"
                             class="login"
-                            id="login"
+                            id="Login"
                             style="font-size: 14px"
                             placeholder="Loginni kiriting"
                             @keyup.enter="enterButton"
                             clearable size="small"
                         ></el-input>
                         <p v-if="!inputLogin && notFilled" class="not-filled">
-                            Majburiy maydon
+                            Required
                         </p>
                         <p v-else class="not-filled"></p>
                         <label style="font-size: 14px; margin-top: 5px; font-weight: normal; color: #3d4046"
                                for="password">
-                            Parol
+                            Password
                         </label>
                         <el-input
                             v-model="inputPassword"
@@ -44,16 +44,16 @@
                             style="font-size: 14px" type="password"
                             show-password
                             @keyup.enter="enterButton"
-                            placeholder="Parolni kiriting"
+                            placeholder="Enter passrord"
                             clearable size="small"
                         ></el-input>
                         <p v-if="!inputPassword && notFilled" class="not-filled">
-                            Majburiy maydon
+                            Required
                         </p>
                         <p v-else class="not-filled"></p>
                         <label style="font-size: 14px; margin-top: 5px; font-weight: normal; color: #3d4046"
                                for="password">
-                            Pochta
+                            Email Address
                         </label>
                         <el-input
                             v-model="inputEmail"
@@ -62,20 +62,20 @@
                             id="email"
                             style="font-size: 14px"
                             @keyup.enter="enterButton" pattern=".+@example\.com"
-                            placeholder="Email pochtangizni kiriting"
+                            placeholder="Enter your email"
                             clearable size="small"
                         ></el-input>
                         <p v-if="!inputEmail && notFilled" class="not-filled">
-                            Majburiy maydon
+                            Required
                         </p>
                         <p v-else class="not-filled"></p>
                         <el-button @click="enterButton" class="w-1/2 mt-5 ml-[25%] bg-blue-700 text-white">
-                            TIZIMGA KIRISH
+                            ENTER
                         </el-button>
                     </form>
                 </div>
                 <div class="w-full flex justify-center">
-                    <el-button @click="router.push('/')" class="mt-32" type="text">Registratsiyadan o'tganmisiz?</el-button>
+                    <el-button @click="router.push('/')" class="mt-32" type="text">Sign in</el-button>
                 </div>
             </el-col>
         </el-row>
@@ -109,12 +109,12 @@ const enterButton = () => {
             email: inputEmail.value,
             login: inputLogin.value,
             password: inputPassword.value,
-            role: 'PM'
+            role: 'EMPLOYEE'
         }).then(res => {
             router.push('/')
         }).catch(err => { console.log(err) })
     } else {
-        ElMessage.error('Pochta manzilni to\'g\'ri kiriting!')
+        ElMessage.error('Enter your email address correctly!')
     }
 }
 </script>

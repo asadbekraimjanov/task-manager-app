@@ -1,6 +1,16 @@
 <template>
     <div v-loading="loading" class="w-full h-full p-2">
-        <p class="text-xl font-normal text-blue-950 border-b-2  py-1">E'lonlar ro'yxati</p>
+        <div class="w-full flex justify-between border-b-2 px-2 pb-2">
+            <p class="text-xl font-normal text-blue-950 py-1">List board</p>
+            <el-radio-group v-model="radioButtonProjects" @change="onDataChange">
+                <el-radio-button value="ALL_DATA">
+                    <template #default>
+                        <p class="px-6">All</p>
+                    </template>
+                </el-radio-button>
+                <el-radio-button label="My projects" value="MY_PROJECTS" />
+            </el-radio-group>
+        </div>
         <el-scrollbar class="w-full h-[calc(100vh-150px)] border-b">
             <div class="w-full h-full p-2 overflow-y-auto flex flex-wrap pt-4">
                 <div v-for="item in paginatedDataTable" class="w-full h-[200px] shadow-lg mb-4 flex">
@@ -29,36 +39,37 @@
                             </div>
                             <div v-else
                                 class="h-full bg-gray-200 text-gray-700 font-normal rounded-lg flex justify-center items-center flex-wrap px-3">
-                                Hodim biriktirilmagan
+                                Employee not attached
                             </div>
                         </div>
 
                         <div class="w-full flex items-center">
                             <div class="max-h-max border-r px-4">
                                 <p class="font-bold text-gray-700 text-center">{{ item.employees.length }}</p>
-                                <span class="text-xs font-normal text-gray-500">Qatnashuvchilar</span>
+                                <span class="text-xs font-normal text-gray-500">Binded employees</span>
                             </div>
                             <div class="max-h-max border-r px-4">
                                 <p class="font-bold text-gray-700 text-center flex items-center justify-center">
                                     <el-statistic :value="item.budget" :value-style="{color: 'rgb(55 65 81)', fontWeight: 'bold'}"/>
                                     <span>$</span>
                                 </p>
-                                <span class="text-xs font-normal text-gray-500">Umumiy sarf</span>
+                                <span class="text-xs font-normal text-gray-500">Total cost</span>
                             </div>
                             <div class="max-h-max border-r px-4">
                                 <p class="font-bold text-gray-700 text-center"
                                     :class="moment(item.endDate, 'DD-MM-YYYY').diff(moment(), 'days') < 0 ? 'text-red-500' : ''">
-                                    {{ moment(item.endDate, 'DD-MM-YYYY').diff(moment(), 'days') < 0 ? 'Muddati o\'tgan' : moment(item.endDate, 'DD-MM-YYYY').diff(moment(), 'days') + ' kun' }}
+                                    {{ moment(item.endDate, 'DD-MM-YYYY').diff(moment(), 'days') < 0 ? 'Deadline expired' : moment(item.endDate, 'DD-MM-YYYY').diff(moment(), 'days') }}
+                                    {{ moment(item.endDate, 'DD-MM-YYYY').diff(moment(), 'days') <= 1 ? '' : 'days' }}
                                 </p>
-                                <span class="text-xs font-normal text-gray-500">Tugash vaqti</span>
+                                <span class="text-xs font-normal text-gray-500">End date</span>
                             </div>
                             <div class="max-h-max w-80 flex justify-center flex-wrap border-r px-4">
                                 <CommentaryInput :task-id="item.id" />
-                                <span class="text-xs font-normal text-gray-500">Kommentariya</span>
+                                <span class="text-xs font-normal text-gray-500">Commentary</span>
                             </div>
                             <div class="max-h-max w-40 flex justify-center flex-wrap border-r px-4">
                                 <RateComponent :type="'PROJECT'"/>
-                                <span class="text-xs font-normal text-gray-500">Umumiy: {{ item.rate }}</span>
+                                <span class="text-xs font-normal text-gray-500">Total: {{ item.rate }}</span>
                             </div>
                         </div>
                     </div>
@@ -86,24 +97,25 @@ import axios from "axios";
 import moment from "moment/moment";
 import CommentaryInput from "@/views/helpers/CommentaryInput.vue";
 import RateComponent from "@/views/helpers/RateComponent.vue";
+import store from "@/store";
 
 const currentPage = ref(1)
 const pageSize = ref(10)
 const defaultPageSize = ref(10)
 const pageSizes = ref([10, 20, 30, 40, 50, 100])
-const rawValue = ref(0)
-const testRawValue = ref(0)
 const loading = ref(false)
+const storedTableData = ref([])
 const tableData = ref([])
 const start = ref(null)
 const end = ref(null)
+const radioButtonProjects = ref('ALL_DATA')
 const paginatedDataTable = ref([])
 const status = ref({
-    IN_PROGRESS: 'Jarayonda',
-    COMPLETED: 'Tugallangan',
-    PENDING: 'Kutilmoqda',
-    CANCELLED: 'Bekor qilingan',
-    BACKLOG: 'Orqada',
+    IN_PROGRESS: 'IN_PROGRESS',
+    COMPLETED: 'COMPLETED',
+    PENDING: 'PENDING',
+    CANCELLED: 'CANCELLED',
+    BACKLOG: 'BACKLOG',
 })
 const typeTag = {
     'IN_PROGRESS': 'primary',
@@ -111,6 +123,18 @@ const typeTag = {
     'PENDING': 'warning',
     'CANCELLED': 'error',
     'BACKLOG': 'info'
+}
+
+const onDataChange = () => {
+    if (radioButtonProjects.value === 'MY_PROJECTS') {
+        tableData.value = tableData.value.filter((item) => {
+            return item.employees?.some(emp => emp.id === store.state.userData?.userId);
+        })
+        paginatedDataTable.value = tableData.value
+    } else {
+        tableData.value = storedTableData.value
+        paginatedDataTable.value = tableData.value
+    }
 }
 
 const paginatedData = () => {
@@ -136,7 +160,8 @@ const getTableData = () => {
     axios.get('http://16.170.249.186:8080/api/pro/get-list', {
         headers: {'Content-Type': 'application/json'}
     }).then(res => {
-        tableData.value = res.data;
+        tableData.value = res.data
+        storedTableData.value = res.data;
         paginatedData()
         console.log(tableData.value)
         console.log(paginatedDataTable.value)
